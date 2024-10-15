@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Order Management</title>
+</head>
+<body>
+    <div class="container">
+        <h2 class="mt-5">Order Management</h2>
+        <form id="orderForm">
+            <div class="form-group">
+                <label for="product">Product</label>
+                <input type="text" class="form-control" id="product" required>
+            </div>
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" class="form-control" id="quantity" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Order</button>
+        </form>
+
+        <h3 class="mt-5">Existing Orders</h3>
+        <ul id="orderList" class="list-group"></ul>
+    </div>
+
+    <script>
+        document.getElementById("orderForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const product = document.getElementById("product").value;
+            const quantity = document.getElementById("quantity").value;
+
+            fetch("/api/orders", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ product, quantity })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Order added successfully!");
+                loadOrders(); // Reload orders after adding a new one
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Failed to add order!");
+            });
+        });
+
+        function loadOrders() {
+            fetch("/api/orders")
+                .then(response => response.json())
+                .then(data => {
+                    const orderList = document.getElementById("orderList");
+                    orderList.innerHTML = ""; // Clear existing orders
+                    data.forEach(order => {
+                        const li = document.createElement("li");
+                        li.className = "list-group-item";
+                        li.innerHTML = `${order.product} - Quantity: ${order.quantity}`;
+                        orderList.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+        }
+
+        // Load orders when the page is loaded
+        window.onload = loadOrders;
+    </script>
+</body>
+</html>
